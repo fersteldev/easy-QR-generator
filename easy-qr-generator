@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Easy-QR Generator</title>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,0,80,0.12), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(0,120,255,0.12), transparent 45%),
+    #0b0d10;
+  font-family:Inter,Arial,sans-serif;
+  padding:20px;
+}
+
+.widget{
+  width:360px;
+  padding:22px;
+  border-radius:22px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(22px) saturate(140%);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 40px 120px rgba(0,0,0,0.6);
+  color:#eaeaea;
+  position:relative;
+  overflow:hidden;
+}
+
+.switch{
+  position:relative;
+}
+
+.switch button{
+  position:relative;
+  z-index:2;
+}
+
+.switch::after{
+  content:"";
+  position:absolute;
+  top:4px;
+  left:4px;
+  width:50%;
+  height:calc(100% - 8px);
+  border-radius:10px;
+  background:rgba(255,255,255,0.18);
+  transition:0.25s ease;
+  z-index:1;
+}
+
+.switch.wifi::after{
+  transform:translateX(100%);
+}
+
+
+.widget.mode-text{
+  box-shadow:0 40px 120px rgba(0,0,0,0.6), 0 0 80px rgba(0,120,255,0.08);
+}
+
+
+.widget.mode-wifi{
+  box-shadow:0 40px 120px rgba(0,0,0,0.6), 0 0 80px rgba(255,0,80,0.10);
+}
+
+.widget::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06),transparent);
+  pointer-events:none;
+}
+
+.header{
+  text-align:center;
+  margin-bottom:14px;
+}
+
+.title{
+  font-size:18px;
+  font-weight:800;
+}
+
+.hint{
+  font-size:11px;
+  opacity:0.4;
+}
+
+.switch{
+  display:flex;
+  background:rgba(255,255,255,0.06);
+  border-radius:12px;
+  padding:4px;
+  margin-bottom:12px;
+}
+
+.switch button{
+  flex:1;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:transparent;
+  color:#aaa;
+  cursor:pointer;
+  font-weight:600;
+  transition:.2s;
+}
+
+.switch button.active{
+  background:rgba(255,255,255,0.14);
+  color:#fff;
+}
+
+.section{
+  margin-top:10px;
+}
+
+.hidden{display:none}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.06);
+  color:#fff;
+  outline:none;
+  box-sizing:border-box;
+  font-size:13px;
+}
+
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  cursor:pointer;
+
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(10px);
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.6) 50%),
+    linear-gradient(135deg, rgba(255,255,255,0.6) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size:5px 5px;
+  background-repeat:no-repeat;
+
+  padding-right:32px;
+}
+
+select option{
+  background:#12141a;
+  color:#fff;
+}
+
+input::placeholder{color:#aaa}
+
+#qrcode{
+  margin-top:14px;
+  display:flex;
+  justify-content:center;
+}
+
+a{
+  display:block;
+  margin-top:10px;
+  text-align:center;
+  font-size:12px;
+  color:#aaa;
+  word-break:break-all;
+}
+
+.color-box{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top:10px;
+  padding:10px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);
+}
+
+.color-preview{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,0.2);
+  flex-shrink:0;
+}
+
+#colorPicker{
+  position:fixed;
+  top:0;
+  left:0;
+  opacity:0;
+  width:1px;
+  height:1px;
+  pointer-events:none;
+}
+
+button.download{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+  cursor:pointer;
+}
+
+button.download:hover{
+  background:rgba(255,255,255,0.18);
+}
+
+#colorPicker{
+  position:absolute;
+  opacity:0;
+  width:0;
+  height:0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="widget">
+
+  <div class="header">
+    <div class="title">Easy-QR Generator</div>
+    <div class="hint">URL / WiFi generator</div>
+  </div>
+
+  <div class="switch">
+    <button id="btnText" class="active">URL</button>
+    <button id="btnWifi">WiFi</button>
+  </div>
+
+  <div id="textSection" class="section">
+    <input id="qrText" type="text" placeholder="Type URL Adress or Text">
+  </div>
+
+  <div id="wifiSection" class="section hidden">
+    <input id="wifiName" type="text" placeholder="SSID">
+    <input id="wifiPass" type="text" placeholder="Password">
+    <select id="wifiType">
+      <option value="WPA">WPA/WPA2</option>
+      <option value="WEP">WEP</option>
+      <option value="nopass">No password</option>
+    </select>
+  </div>
+
+  <div class="color-box">
+    <div class="color-preview" id="colorPreview"></div>
+    <input type="text" id="colorHex" value="#ffffff">
+  </div>
+  <input type="color" id="colorPicker" value="#ffffff">
+
+  <br>
+  <button class="download" onclick="downloadQR()">Download PNG</button>
+
+  <div id="qrcode"></div>
+  <a id="qrLink"></a>
+
+</div>
+
+<script>
+let mode = "text";
+
+const qrContainer = document.getElementById("qrcode");
+
+const widget = document.querySelector(".widget");
+const switchBox = document.querySelector(".switch");
+
+const btnText = document.getElementById("btnText");
+const btnWifi = document.getElementById("btnWifi");
+
+const textSection = document.getElementById("textSection");
+const wifiSection = document.getElementById("wifiSection");
+
+function clearInputs(){
+  document.getElementById("qrText").value = "";
+  document.getElementById("wifiName").value = "";
+  document.getElementById("wifiPass").value = "";
+  document.getElementById("qrLink").innerText = "";
+  document.getElementById("qrLink").href = "#";
+  qrContainer.innerHTML = "";
+}
+
+function generateQR(){
+  qrContainer.innerHTML = "";
+
+  let text = "";
+
+  if(mode === "text"){
+    const input = document.getElementById("qrText").value.trim();
+    if(!input) return;
+
+    text = input.startsWith("http") ? input : "https://" + input;
+
+    document.getElementById("qrLink").innerText = text;
+    document.getElementById("qrLink").href = text;
+
+  } else {
+    const ssid = document.getElementById("wifiName").value.trim();
+    const pass = document.getElementById("wifiPass").value;
+    const type = document.getElementById("wifiType").value;
+
+    if(!ssid) return;
+
+    text = `WIFI:T:${type};S:${ssid};P:${pass};;`;
+
+    document.getElementById("qrLink").innerText = "WiFi QR";
+    document.getElementById("qrLink").href = "#";
+  }
+
+  const color = document.getElementById("colorHex").value;
+
+  new QRCode(qrContainer, {
+    text,
+    width: 200,
+    height: 200,
+    colorDark: color,
+    colorLight: "#00000000"
+  });
+}
+
+btnText.onclick = () => {
+  mode = "text";
+
+  btnText.classList.add("active");
+  btnWifi.classList.remove("active");
+
+  textSection.classList.remove("hidden");
+  wifiSection.classList.add("hidden");
+
+  switchBox.classList.remove("wifi");
+  widget.classList.add("mode-text");
+  widget.classList.remove("mode-wifi");
+
+  clearInputs();
+  generateQR();
+};
+
+btnWifi.onclick = () => {
+  mode = "wifi";
+
+  btnWifi.classList.add("active");
+  btnText.classList.remove("active");
+
+  wifiSection.classList.remove("hidden");
+  textSection.classList.add("hidden");
+
+  switchBox.classList.add("wifi");
+  widget.classList.add("mode-wifi");
+  widget.classList.remove("mode-text");
+
+  clearInputs();
+  generateQR();
+};
+
+document.querySelectorAll("input, select").forEach(el=>{
+  el.addEventListener("input", generateQR);
+});
+
+function downloadQR(){
+  const img = qrContainer.querySelector("img") || qrContainer.querySelector("canvas");
+  if(!img) return;
+
+  const url = img.tagName==="IMG" ? img.src : img.toDataURL("image/png");
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "qr.png";
+  a.click();
+}
+
+const picker = document.getElementById("colorPicker");
+const preview = document.getElementById("colorPreview");
+const hex = document.getElementById("colorHex");
+
+function syncColor(val){
+  preview.style.background = val;
+  hex.value = val;
+  picker.value = val;
+  generateQR();
+}
+
+preview.onclick = ()=>picker.click();
+
+picker.addEventListener("input", ()=>syncColor(picker.value));
+
+hex.addEventListener("input", ()=>{
+  if(/^#([0-9A-F]{3}){1,2}$/i.test(hex.value)){
+    syncColor(hex.value);
+  }
+});
+
+syncColor("#ffffff");
+
+generateQR();
+</script>
+
+</body>
+</html>
