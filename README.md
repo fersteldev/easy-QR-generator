@@ -2,7 +2,7 @@
 Easy QR Generator is a minimal and fast application for creating QR codes from text or URLs. Built for simplicity, it allows users to generate and download QR codes.
 
 ![status](https://img.shields.io/badge/status-active-2ea44f?style=flat-square)
-![version](https://img.shields.io/badge/version-1.0.0-fc4955?style=flat-square)
+![version](https://img.shields.io/badge/version-1.0.1-fc4955?style=flat-square)
 ![library](https://img.shields.io/badge/library-qrcodejs-orange?style=flat-square)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square)
 
