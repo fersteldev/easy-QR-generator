@@ -272,8 +272,10 @@ button.download:hover{
   <input type="color" id="colorPicker" value="#ffffff">
 
   <br>
-  <button class="download" onclick="downloadQR()">Download PNG</button>
-
+	
+<button class="download" onclick="downloadQR()">Download PNG</button>
+<button class="download" onclick="downloadQR(true)">Download PNG + label</button>
+	
   <div id="qrcode"></div>
   <a id="qrLink"></a>
 
@@ -378,15 +380,62 @@ document.querySelectorAll("input, select").forEach(el=>{
   el.addEventListener("input", generateQR);
 });
 
-function downloadQR(){
-  const img = qrContainer.querySelector("img") || qrContainer.querySelector("canvas");
-  if(!img) return;
+function downloadQR(withLabel = false){
+  const canvas = qrContainer.querySelector("canvas");
+  if(!canvas) return;
 
-  const url = img.tagName==="IMG" ? img.src : img.toDataURL("image/png");
+  if(!withLabel){
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "qr.png";
+    a.click();
+    return;
+  }
+
+  const finalCanvas = document.createElement("canvas");
+  const ctx = finalCanvas.getContext("2d");
+
+  const padding = 20;
+  const labelHeight = 40;
+
+  finalCanvas.width = canvas.width + padding * 2;
+  finalCanvas.height = canvas.height + padding * 2 + labelHeight;
+
+  ctx.fillStyle = "#0b0d10";
+  ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+  ctx.drawImage(canvas, padding, padding);
+
+  let label = "";
+
+  if(mode === "text"){
+    const input = document.getElementById("qrText").value.trim();
+    try{
+      const urlObj = new URL(input.startsWith("http") ? input : "https://" + input);
+      label = urlObj.hostname;
+    }catch{
+      label = input;
+    }
+  } else {
+    label = document.getElementById("wifiName").value || "WiFi";
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "16px Inter, Arial";
+  ctx.textAlign = "center";
+
+  ctx.fillText(
+    label,
+    finalCanvas.width / 2,
+    canvas.height + padding + 25
+  );
+
+  const url = finalCanvas.toDataURL("image/png");
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "qr.png";
+  a.download = "qr_label.png";
   a.click();
 }
 
